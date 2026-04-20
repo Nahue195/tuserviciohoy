@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
-
-const Schema = z.object({
-  proveedorId: z.string(),
-  plan: z.enum(['FREE', 'PRO']),
-  meses: z.number().int().min(1).max(12).optional().default(1),
-});
 
 function adminAuthorized(req: NextRequest) {
   const secret = process.env.ADMIN_SECRET;
   if (!secret) return false;
-  const auth = req.headers.get('authorization') ?? '';
-  return auth === `Bearer ${secret}`;
+  return req.headers.get('authorization') === `Bearer ${secret}`;
 }
 
 export async function PATCH(req: NextRequest) {
@@ -23,26 +15,29 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    const body = Schema.parse(await req.json());
+    const body = await req.json() as { proveedorId?: string; plan?: string; meses?: number };
+    const { proveedorId, plan, meses = 1 } = body;
 
-    const planVence = body.plan === 'PRO'
-      ? new Date(Date.now() + body.meses * 30 * 24 * 60 * 60 * 1000)
+    if (!proveedorId || !plan || !['FREE', 'PRO'].includes(plan)) {
+      return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
+    }
+
+    const planVence = plan === 'PRO'
+      ? new Date(Date.now() + meses * 30 * 24 * 60 * 60 * 1000)
       : null;
 
     const proveedor = await prisma.proveedor.update({
-      where: { id: body.proveedorId },
-      data: { plan: body.plan, planVence },
+      where: { id: proveedorId },
+      data: { plan: plan as 'FREE' | 'PRO', planVence },
       select: { id: true, nombre: true, plan: true, planVence: true },
     });
 
     return NextResponse.json(proveedor);
-  } catch (e) {
-    if (e instanceof z.ZodError) return NextResponse.json({ error: e.errors }, { status: 400 });
+  } catch {
     return NextResponse.json({ error: 'Error al actualizar plan' }, { status: 500 });
   }
 }
 
-// Listar todos los proveedores con su plan (útil para administrar)
 export async function GET(req: NextRequest) {
   if (!adminAuthorized(req)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
