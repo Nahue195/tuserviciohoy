@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const Schema = z.object({
   proveedorId: z.string(),
   plan: z.enum(['FREE', 'PRO']),
