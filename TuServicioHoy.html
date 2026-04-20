@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<title>TuServicioHoy — Diseño</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #2A2420; font-family: 'Instrument Sans', system-ui, sans-serif; color: #F5EDDE; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  input, textarea, button { font-family: inherit; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(139,125,107,0.35); border-radius: 9999px; }
+  .tsh-tab { transition: all 180ms cubic-bezier(.2,.8,.2,1); }
+  .tsh-tab:hover { background: rgba(245,237,222,0.08); }
+  .tsh-tab.active { background: #F5EDDE; color: #2A2420 !important; }
+  @keyframes tsh-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .tsh-screen { animation: tsh-fade 340ms cubic-bezier(.2,.8,.2,1); }
+  @keyframes tsh-sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes tsh-fade-bg { from { opacity: 0; } to { opacity: 1; } }
+  .tsh-sheet-anim { animation: tsh-sheet-in 340ms cubic-bezier(.2,.8,.2,1); }
+  .tsh-sheet-bg { animation: tsh-fade-bg 200ms ease; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-system.jsx"></script>
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="screen-home.jsx"></script>
+<script type="text/babel" src="screen-search.jsx"></script>
+<script type="text/babel" src="screen-profile.jsx"></script>
+<script type="text/babel" src="screen-booking.jsx"></script>
+<script type="text/babel" src="screen-dashboard.jsx"></script>
+
+<script type="text/babel">
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "accent": "terracotta",
+  "displayFont": "DM Serif Display",
+  "cityName": "Villa San Rafael",
+  "grain": true,
+  "darkStage": true
+}/*EDITMODE-END*/;
+
+const SCREENS = [
+  { id: 'home',      label: 'Home',       sub: 'Landing' },
+  { id: 'search',    label: 'Búsqueda',   sub: 'Resultados' },
+  { id: 'profile',   label: 'Perfil',     sub: 'Proveedor' },
+  { id: 'booking',   label: 'Reserva',    sub: 'Flow' },
+  { id: 'dashboard', label: 'Dashboard',  sub: 'Proveedor' },
+];
+
+const SAVE_KEY = 'tsh-state-v2';
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
+    return { screen: s.screen || 'home', providerId: s.providerId || 'p1' };
+  } catch { return { screen: 'home', providerId: 'p1' }; }
+}
+
+function App() {
+  const [state, setState] = React.useState(loadState);
+  const { screen, providerId } = state;
+  const [bookingOpen, setBookingOpen] = React.useState(null); // {variant,slot,day}
+  const [tweaksOpen, setTweaksOpen] = React.useState(false);
+  const [tweaks, setTweaks] = React.useState(TWEAKS);
+
+  // Persist
+  React.useEffect(() => { localStorage.setItem(SAVE_KEY, JSON.stringify({ screen, providerId })); }, [screen, providerId]);
+
+  // Tweaks protocol
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setTweaksOpen(true);
+      if (e.data?.type === '__deactivate_edit_mode') setTweaksOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const updateTweak = (k, v) => {
+    const next = { ...tweaks, [k]: v };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+  };
+
+  // Apply tweak: accent color
+  const accentMap = {
+    terracotta: { primary: '#C4532A', soft: '#E88A5F' },
+    emerald:    { primary: '#0F6E4E', soft: '#4A9A7E' },
+    indigo:     { primary: '#3F4C7A', soft: '#7A87B3' },
+    coral:      { primary: '#D9634A', soft: '#F0907A' },
+  };
+  React.useEffect(() => {
+    // live overwrite a few known color slots via CSS vars would require refactor; simplest: set --tsh-accent on root
+    document.documentElement.style.setProperty('--tsh-accent', accentMap[tweaks.accent]?.primary || '#C4532A');
+  }, [tweaks.accent]);
+
+  const nav = (s, pid) => {
+    setState(prev => ({ screen: s, providerId: pid || prev.providerId }));
+    // scroll to top on both devices
+    setTimeout(() => {
+      document.querySelectorAll('.tsh-device-scroll').forEach(el => el.scrollTop = 0);
+    }, 10);
+  };
+
+  const openBooking = (slot, day) => setBookingOpen({ slot, day });
+  const closeBooking = () => setBookingOpen(null);
+
+  const cityName = tweaks.cityName || 'Villa San Rafael';
+
+  // Pick the active pair of screens
+  const MobileEl = {
+    home: <TshHomeMobile onNav={nav} city={cityName}/>,
+    search: <TshSearchMobile onNav={nav}/>,
+    profile: <TshProfileMobile onNav={nav} providerId={providerId} onBook={openBooking}/>,
+    booking: <TshProfileMobile onNav={nav} providerId={providerId} onBook={openBooking}/>,
+    dashboard: <TshDashboardMobile onNav={nav}/>,
+  }[screen];
+
+  const DesktopEl = {
+    home: <TshHomeDesktop onNav={nav} city={cityName}/>,
+    search: <TshSearchDesktop onNav={nav}/>,
+    profile: <TshProfileDesktop onNav={nav} providerId={providerId} onBook={openBooking}/>,
+    booking: <TshProfileDesktop onNav={nav} providerId={providerId} onBook={openBooking}/>,
+    dashboard: <TshDashboardDesktop onNav={nav}/>,
+  }[screen];
+
+  // Force booking sheet to open if we're on 'booking' screen
+  React.useEffect(() => {
+    if (screen === 'booking' && !bookingOpen) {
+      setBookingOpen({ slot: '15:30', day: TSH_DAYS[0] });
+    }
+  }, [screen]);
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#1C1915', position: 'relative' }}>
+      {/* Subtle grain on stage */}
+      {tweaks.grain && (
+        <svg style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.05, zIndex: 1 }}>
+          <filter id="stage-grain"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/></filter>
+          <rect width="100%" height="100%" filter="url(#stage-grain)"/>
+        </svg>
+      )}
+
+      {/* Top chrome: brand + screen tabs */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 30,
+        background: 'rgba(28,25,21,0.85)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(245,237,222,0.1)',
+        padding: '18px 36px', display: 'flex', alignItems: 'center', gap: 32,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 500, fontSize: 22, color: '#F5EDDE', letterSpacing: -0.4 }}>
+            Tu<span style={{ color: '#E88A5F', fontStyle: 'italic' }}>Servicio</span>Hoy
+          </div>
+          <span style={{ padding: '3px 8px', borderRadius: 9999, background: 'rgba(245,237,222,0.1)', fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: '#E5D9C2' }}>Design · v1</span>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', gap: 4, justifyContent: 'center' }}>
+          {SCREENS.map((s, i) => (
+            <div key={s.id} onClick={() => nav(s.id)} className={`tsh-tab ${screen === s.id ? 'active' : ''}`} style={{
+              padding: '8px 16px', borderRadius: 9999, cursor: 'pointer',
+              display: 'flex', alignItems: 'baseline', gap: 8,
+              color: 'rgba(245,237,222,0.7)',
+            }}>
+              <span style={{ fontSize: 11, fontWeight: 700, opacity: 0.6 }}>{String(i+1).padStart(2,'0')}</span>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>{s.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ fontSize: 12, color: 'rgba(245,237,222,0.5)', fontFamily: 'ui-monospace, Menlo, monospace' }}>
+          {SCREENS.find(s => s.id === screen)?.sub} · Mobile + Desktop
+        </div>
+      </div>
+
+      {/* Stage */}
+      <div style={{ padding: '36px 36px 80px', display: 'flex', gap: 32, alignItems: 'flex-start', justifyContent: 'center', position: 'relative', zIndex: 2 }}
+        data-screen-label={`0${SCREENS.findIndex(s => s.id === screen) + 1} ${SCREENS.find(s => s.id === screen)?.label}`}
+      >
+        {/* Mobile (iOS) */}
+        <div style={{ position: 'sticky', top: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+          <div style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, color: 'rgba(245,237,222,0.45)', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+            ○ Mobile · 402 × 874
+          </div>
+          <div className="tsh-screen" key={screen + '-m'}>
+            <IOSDevice width={402} height={844}>
+              <div className="tsh-device-scroll" style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}>
+                {MobileEl}
+                {bookingOpen && (
+                  <>
+                    <div className="tsh-sheet-bg" onClick={closeBooking} style={{
+                      position: 'absolute', inset: 0, background: 'rgba(42,36,32,0.4)', backdropFilter: 'blur(2px)',
+                      zIndex: 30,
+                    }}/>
+                    <div className="tsh-sheet-anim" style={{
+                      position: 'absolute', bottom: 0, left: 0, right: 0,
+                      height: '92%', background: '#F5EDDE', borderRadius: '24px 24px 0 0',
+                      boxShadow: '0 -4px 32px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 40,
+                    }}>
+                      <TshBookingFlow
+                        providerId={providerId}
+                        initialSlot={bookingOpen.slot}
+                        initialDay={bookingOpen.day}
+                        onClose={closeBooking}
+                        onDone={() => { closeBooking(); nav('home'); }}
+                        variant="sheet"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </IOSDevice>
+          </div>
+        </div>
+
+        {/* Desktop */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, flex: 1, maxWidth: 1280 }}>
+          <div style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, color: 'rgba(245,237,222,0.45)', letterSpacing: 0.8, textTransform: 'uppercase', alignSelf: 'flex-start', marginLeft: 8 }}>
+            ▭ Desktop · 1280 × auto
+          </div>
+          <div className="tsh-screen" key={screen + '-d'} style={{
+            width: '100%', borderRadius: 20, overflow: 'hidden',
+            boxShadow: '0 40px 100px rgba(0,0,0,0.4), 0 0 0 1px rgba(245,237,222,0.08)',
+            position: 'relative',
+          }}>
+            {/* Browser chrome */}
+            <div style={{ background: '#FFFBF3', borderBottom: '1px solid #EADFC5', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#E88A5F' }}/>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#D69A2A' }}/>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#7A8968' }}/>
+              </div>
+              <div style={{ flex: 1, margin: '0 20px', padding: '4px 14px', borderRadius: 9999, background: '#F5EDDE', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, color: '#5C5048', textAlign: 'center' }}>
+                tuserviciohoy.com.ar / {screen === 'home' ? '' : screen}
+              </div>
+            </div>
+            <div className="tsh-device-scroll" style={{ maxHeight: 'calc(100vh - 100px)', minHeight: 600, overflow: 'auto', position: 'relative' }}>
+              {DesktopEl}
+              {bookingOpen && (
+                <>
+                  <div className="tsh-sheet-bg" onClick={closeBooking} style={{
+                    position: 'fixed', inset: 0, background: 'rgba(42,36,32,0.4)', backdropFilter: 'blur(3px)',
+                    zIndex: 50,
+                  }}/>
+                  <div style={{
+                    position: 'fixed', top: 0, right: 0, bottom: 0, width: 520,
+                    background: '#F5EDDE', boxShadow: '-4px 0 32px rgba(0,0,0,0.2)', zIndex: 60,
+                    animation: 'tsh-slide-in 340ms cubic-bezier(.2,.8,.2,1)',
+                  }}>
+                    <style>{`@keyframes tsh-slide-in { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
+                    <TshBookingFlow
+                      providerId={providerId}
+                      initialSlot={bookingOpen.slot}
+                      initialDay={bookingOpen.day}
+                      onClose={closeBooking}
+                      onDone={() => { closeBooking(); nav('home'); }}
+                      variant="drawer"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tweaks panel */}
+      {tweaksOpen && (
+        <div style={{
+          position: 'fixed', bottom: 24, right: 24, width: 320,
+          background: '#FFFBF3', color: '#2A2420', borderRadius: 18, padding: 20,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.08)',
+          zIndex: 100, fontFamily: 'Instrument Sans, sans-serif',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ fontFamily: 'Fraunces, serif', fontWeight: 500, fontSize: 18, letterSpacing: -0.3 }}>Tweaks</div>
+            <button onClick={() => setTweaksOpen(false)} style={{ width: 28, height: 28, borderRadius: 9999, background: '#FAF4E8', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <TshIcon name="close" size={12} color="#2A2420"/>
+            </button>
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, color: '#8B7D6B', marginBottom: 8 }}>Color acento</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[
+                { id: 'terracotta', color: '#C4532A' },
+                { id: 'emerald', color: '#0F6E4E' },
+                { id: 'indigo', color: '#3F4C7A' },
+                { id: 'coral', color: '#D9634A' },
+              ].map(c => (
+                <div key={c.id} onClick={() => updateTweak('accent', c.id)} style={{
+                  width: 40, height: 40, borderRadius: 12, background: c.color, cursor: 'pointer',
+                  border: `2px solid ${tweaks.accent === c.id ? '#2A2420' : 'transparent'}`,
+                  boxShadow: tweaks.accent === c.id ? '0 0 0 2px #FFFBF3 inset' : 'none',
+                }}/>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, color: '#8B7D6B', marginBottom: 8 }}>Ciudad</div>
+            <input value={tweaks.cityName} onChange={e => updateTweak('cityName', e.target.value)} style={{
+              width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #E5D9C2',
+              background: '#FAF4E8', fontSize: 14, color: '#2A2420', outline: 'none', boxSizing: 'border-box',
+            }}/>
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, color: '#8B7D6B', marginBottom: 8 }}>Tipografía display</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {['Fraunces', 'Instrument Serif', 'DM Serif Display'].map(f => (
+                <div key={f} onClick={() => updateTweak('displayFont', f)} style={{
+                  padding: '6px 12px', borderRadius: 9999,
+                  background: tweaks.displayFont === f ? '#2A2420' : '#FAF4E8',
+                  color: tweaks.displayFont === f ? '#F5EDDE' : '#2A2420',
+                  fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  border: `1px solid ${tweaks.displayFont === f ? '#2A2420' : '#E5D9C2'}`,
+                }}>{f}</div>
+              ))}
+            </div>
+          </div>
+
+          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', marginBottom: 10 }}>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>Grano de papel</span>
+            <div onClick={() => updateTweak('grain', !tweaks.grain)} style={{ width: 38, height: 22, borderRadius: 9999, background: tweaks.grain ? '#0F6E4E' : '#E5D9C2', position: 'relative', transition: 'background 160ms' }}>
+              <div style={{ position: 'absolute', top: 2, left: tweaks.grain ? 18 : 2, width: 18, height: 18, borderRadius: '50%', background: '#FFFBF3', transition: 'left 160ms' }}/>
+            </div>
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Apply display font via stylesheet override when changed
+const styleTag = document.createElement('style');
+document.head.appendChild(styleTag);
+const FONT_MAP = { 'Fraunces': 'Fraunces', 'Instrument Serif': 'Instrument Serif', 'DM Serif Display': 'DM Serif Display' };
+if (TWEAKS.displayFont !== 'Fraunces') {
+  // Load alternate font on demand
+  const href = `https://fonts.googleapis.com/css2?family=${TWEAKS.displayFont.replace(/ /g, '+')}:ital,wght@0,400;0,500;1,400;1,500&display=swap`;
+  const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = href; document.head.appendChild(link);
+}
+// Observe changes via MutationObserver isn't needed — just apply via cssText
+function applyFont(font) {
+  styleTag.textContent = `[style*="Fraunces"] { font-family: "${font}", Georgia, serif !important; }`;
+}
+applyFont(TWEAKS.displayFont);
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+
+</body>
+</html>

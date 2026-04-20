@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 93%;
+    --foreground: 15 14% 15%;
+    --card: 40 50% 98%;
+    --card-foreground: 15 14% 15%;
+    --popover: 40 50% 98%;
+    --popover-foreground: 15 14% 15%;
+    --primary: 16 65% 47%;
+    --primary-foreground: 40 50% 98%;
+    --secondary: 40 33% 93%;
+    --secondary-foreground: 15 14% 15%;
+    --muted: 35 20% 85%;
+    --muted-foreground: 25 15% 48%;
+    --accent: 155 74% 25%;
+    --accent-foreground: 40 50% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 40 50% 98%;
+    --border: 36 30% 83%;
+    --input: 36 30% 83%;
+    --ring: 16 65% 47%;
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --color-cream: #F5EDDE;
+    --color-cream-soft: #FAF4E8;
+    --color-paper: #FFFBF3;
+    --color-ink: #2A2420;
+    --color-muted: #8B7D6B;
+    --color-line: #E5D9C2;
+    --color-terra: #C4532A;
+    --color-emerald: #0F6E4E;
+    --font-serif: var(--font-fraunces), Georgia, serif;
+    --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  }
+}
+
+@layer base {
+  * { @apply border-border; box-sizing: border-box; }
+  body { @apply bg-background text-foreground font-sans; }
+  html, body { height: 100%; }
+  input, textarea, button { font-family: inherit; }
+}
+
+.hide-scrollbar { scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+
+@keyframes tsh-pulse {
+  0%   { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes tsh-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

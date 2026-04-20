@@ -1,0 +1,216 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Auth tables (NextAuth) ───────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Domain models ────────────────────────────────────────────────────────────
+
+enum Role {
+  CLIENTE
+  PROVEEDOR
+}
+
+enum EstadoTurno {
+  PENDIENTE
+  CONFIRMADO
+  CANCELADO
+  COMPLETADO
+}
+
+enum PlanTipo {
+  FREE
+  PRO
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  emailVerified DateTime?
+  image     String?
+  phone     String?
+  role      Role     @default(CLIENTE)
+  createdAt DateTime @default(now())
+
+  accounts  Account[]
+  sessions  Session[]
+  proveedor Proveedor?
+  turnos    Turno[]    @relation("ClienteTurnos")
+  resenas   Resena[]   @relation("ClienteResenas")
+}
+
+model Categoria {
+  id     String @id @default(cuid())
+  nombre String
+  slug   String @unique
+  icono  String
+  color  String
+  tint   String @default("#F5EDDE")
+
+  proveedores Proveedor[]
+}
+
+model Proveedor {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  nombre       String
+  descripcion  String  @db.Text
+  categoriaId  String
+  direccion    String?
+  lat          Float?
+  lng          Float?
+  fotoPerfil   String?
+  fotoPortada  String?
+  precioDesde  Int
+  whatsapp     String?
+  neighborhood String  @default("Centro")
+  distanceKm   Float   @default(1.0)
+  activo       Boolean  @default(true)
+  plan         PlanTipo @default(FREE)
+  planVence    DateTime?
+  since        Int      @default(2020)
+  hours        String  @default("Lun a Vie · 9:00 — 18:00")
+  tags         String[] // ej: ["Corte", "Color", "Peinado"]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoria      Categoria        @relation(fields: [categoriaId], references: [id])
+  disponibilidad Disponibilidad[]
+  turnos         Turno[]
+  resenas        Resena[]
+  bloqueos       BloqueoHorario[]
+  servicios      Servicio[]
+
+  @@index([categoriaId])
+  @@index([activo])
+}
+
+model Servicio {
+  id          String   @id @default(cuid())
+  proveedorId String
+  nombre      String
+  descripcion String?
+  duracion    Int      // minutos
+  precio      Int
+  activo      Boolean  @default(true)
+  orden       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  proveedor   Proveedor @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+
+  @@index([proveedorId])
+}
+
+model Disponibilidad {
+  id                String @id @default(cuid())
+  proveedorId       String
+  diaSemana         Int    // 0=dom, 1=lun, ..., 6=sáb
+  horaInicio        String // "09:00"
+  horaFin           String // "19:00"
+  intervaloMinutos  Int    @default(30)
+
+  proveedor Proveedor @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+
+  @@index([proveedorId])
+}
+
+model Turno {
+  id          String      @id @default(cuid())
+  proveedorId String
+  clienteId   String
+  fecha       DateTime    @db.Date
+  horaInicio  String      // "15:30"
+  horaFin     String      // "16:00"
+  estado      EstadoTurno @default(PENDIENTE)
+  servicio    String?
+  precio      Int?
+  notas       String?     @db.Text
+  codigo      String      @unique @default(cuid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  proveedor Proveedor @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+  cliente   User      @relation("ClienteTurnos", fields: [clienteId], references: [id], onDelete: Cascade)
+  resena    Resena?
+
+  @@index([proveedorId, fecha])
+  @@index([clienteId])
+  @@index([estado])
+}
+
+model Resena {
+  id          String   @id @default(cuid())
+  proveedorId String
+  clienteId   String
+  turnoId     String   @unique
+  rating      Int      // 1-5
+  comentario  String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  proveedor Proveedor @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+  cliente   User      @relation("ClienteResenas", fields: [clienteId], references: [id], onDelete: Cascade)
+  turno     Turno     @relation(fields: [turnoId], references: [id], onDelete: Cascade)
+
+  @@index([proveedorId])
+}
+
+model BloqueoHorario {
+  id          String   @id @default(cuid())
+  proveedorId String
+  fecha       DateTime @db.Date
+  horaInicio  String
+  horaFin     String
+  motivo      String?
+  createdAt   DateTime @default(now())
+
+  proveedor Proveedor @relation(fields: [proveedorId], references: [id], onDelete: Cascade)
+
+  @@index([proveedorId, fecha])
+}
