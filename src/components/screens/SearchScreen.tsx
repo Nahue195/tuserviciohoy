@@ -297,7 +297,7 @@ export function SearchScreenDesktop({ query = '', categorias, proveedores, total
           <div className="flex justify-between items-center mb-5">
             <div>
               <h1 className="font-sans font-bold text-[24px] text-[#1A1208] tracking-[-0.5px] m-0">
-                {query ? `"${query}"` : selectedCats.size > 0 ? [...selectedCats].map(s => categorias.find(c => c.slug === s)?.nombre).join(', ') : 'Todos los servicios'}
+                {query ? `"${query}"` : selectedCats.size > 0 ? Array.from(selectedCats).map(s => categorias.find(c => c.slug === s)?.nombre).join(', ') : 'Todos los servicios'}
               </h1>
               <p className="font-sans text-[13px] text-[#8B7D6B] mt-1 m-0">
                 {filtered.length} resultado{filtered.length !== 1 ? 's' : ''} en {city}
@@ -311,7 +311,7 @@ export function SearchScreenDesktop({ query = '', categorias, proveedores, total
                     <button onClick={() => setAvailOnly(false)} className="bg-transparent border-none cursor-pointer text-[#0F6E4E] p-0 leading-none text-base">×</button>
                   </span>
                 )}
-                {[...selectedCats].map(slug => {
+                {Array.from(selectedCats).map(slug => {
                   const cat = categorias.find(c => c.slug === slug);
                   return cat ? (
                     <span key={slug} className="px-2.5 py-1 rounded-full font-sans text-[11px] font-semibold flex items-center gap-1" style={{ background: cat.tint, color: cat.color }}>
