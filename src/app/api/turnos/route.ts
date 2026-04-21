@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    Promise.all(emailPromises);
+    await Promise.all(emailPromises);
 
     return NextResponse.json(turno, { status: 201 });
   } catch (e) {

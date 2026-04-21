@@ -12,7 +12,8 @@
       "Bash(npx tsc *)",
       "Bash(npx next *)",
       "WebFetch(domain:ui.shadcn.com)",
-      "Bash(xargs sed *)"
+      "Bash(xargs sed *)",
+      "Bash(timeout 10)"
     ]
   }
 }
