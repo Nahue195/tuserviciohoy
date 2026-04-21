@@ -22,13 +22,7 @@ export function TshNavBar({ city, variant = 'desktop', darkBg = false }: TshNavB
     return (
       <div className="px-5 pt-2">
         <div className="flex justify-between items-center mb-3.5">
-          <div>
-            <div className="font-sans text-[11px] text-[#8B7D6B] uppercase tracking-[0.6px] font-semibold">Estás en</div>
-            <div className="inline-flex items-center gap-1 mt-0.5">
-              <TshIcon name="pin" size={14} color="#C4532A"/>
-              <span className="font-serif text-base font-medium text-ink">{city}</span>
-            </div>
-          </div>
+          <div/>
           {status === 'loading' ? (
             <div className="w-10 h-10 rounded-full bg-[#EFE5D0]"/>
           ) : session ? (
@@ -91,10 +85,6 @@ export function TshNavBar({ city, variant = 'desktop', darkBg = false }: TshNavB
         </nav>
       </div>
       <div className="flex gap-3 items-center">
-        <div className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border ${t.cityBorder} font-sans text-[13px] ${t.cityText}`}>
-          <TshIcon name="pin" size={14} color="#E8673A"/>
-          {city}
-        </div>
         {status === 'loading' ? (
           <div className={`w-[90px] h-9 rounded-full ${darkBg ? 'bg-white/10' : 'bg-[#EFE5D0]'}`}/>
         ) : session ? (
