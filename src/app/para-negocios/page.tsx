@@ -165,15 +165,14 @@ export default function ParaNegociosPage() {
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
             <a
               href="/registrar-negocio"
+              className="hover:opacity-90 transition-opacity"
               style={{
                 padding: '14px 32px', borderRadius: 12,
                 background: '#E8673A', color: 'white',
                 fontFamily: 'var(--font-geist-sans), sans-serif',
                 fontSize: 15, fontWeight: 700,
-                textDecoration: 'none', transition: 'opacity 0.15s',
+                textDecoration: 'none',
               }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
             >
               Empezar gratis →
             </a>
