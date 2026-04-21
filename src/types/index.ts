@@ -30,6 +30,8 @@ export interface ProveedorCard {
   hours: string;
   since: number;
   whatsapp?: string;
+  lat?: number;
+  lng?: number;
   isPro?: boolean;
   resenas?: { name: string; rating: number; text: string; date: string }[];
 }

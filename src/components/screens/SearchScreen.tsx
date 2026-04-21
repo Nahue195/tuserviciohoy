@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { TshIcon } from '@/components/ui/TshIcon';
 import { TshProviderCard } from '@/components/ui/TshProviderCard';
 import type { CategoriaData, ProveedorCard } from '@/types';
+
+const TshMap = dynamic(() => import('@/components/ui/TshMap').then(m => ({ default: m.TshMap })), { ssr: false });
 
 interface SearchScreenProps {
   query?: string;
@@ -20,6 +23,7 @@ export function SearchScreenMobile({ query = '', categorias, proveedores, total,
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState('todos');
   const [activeCat, setActiveCat] = useState('');
+  const [mapView, setMapView] = useState(false);
 
   const filtered = proveedores.filter(p => {
     if (activeCat && p.categoria.slug !== activeCat) return false;
@@ -70,27 +74,57 @@ export function SearchScreenMobile({ query = '', categorias, proveedores, total,
         </div>
       </div>
 
-      {/* Count */}
+      {/* Count + toggles */}
       <div className="px-4 py-3 flex justify-between items-center">
         <div className="font-sans text-[13px] text-[#5C5048]">
           <span className="font-bold text-[#1A1208]">{filtered.length}</span> resultados en {city}
         </div>
-        <button
-          onClick={() => setActiveFilter(activeFilter === 'hoy' ? 'todos' : 'hoy')}
-          className={`px-3 py-1.5 rounded-full font-sans text-[12px] font-semibold cursor-pointer border transition-colors ${activeFilter === 'hoy' ? 'bg-[#0F6E4E] text-white border-[#0F6E4E]' : 'bg-[#FFFBF3] text-[#5C5048] border-[#E5D9C2]'}`}
-        >
-          ● Disponible hoy
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveFilter(activeFilter === 'hoy' ? 'todos' : 'hoy')}
+            className={`px-3 py-1.5 rounded-full font-sans text-[12px] font-semibold cursor-pointer border transition-colors ${activeFilter === 'hoy' ? 'bg-[#0F6E4E] text-white border-[#0F6E4E]' : 'bg-[#FFFBF3] text-[#5C5048] border-[#E5D9C2]'}`}
+          >
+            ● Disponible hoy
+          </button>
+          <button
+            onClick={() => setMapView(v => !v)}
+            className={`px-3 py-1.5 rounded-full font-sans text-[12px] font-semibold cursor-pointer border transition-colors ${mapView ? 'bg-[#1A1208] text-[#F5EDDE] border-[#1A1208]' : 'bg-[#FFFBF3] text-[#5C5048] border-[#E5D9C2]'}`}
+          >
+            {mapView ? '☰ Lista' : '⊕ Mapa'}
+          </button>
+        </div>
       </div>
 
-      <div className="px-4 pb-10 flex flex-col gap-3">
-        {filtered.length === 0 && (
-          <div className="text-center py-14 text-[#8B7D6B] font-sans text-[14px]">Sin resultados para esta búsqueda</div>
-        )}
-        {filtered.map(p => (
-          <TshProviderCard key={p.id} provider={p} onClick={() => router.push(`/proveedor/${p.id}`)}/>
-        ))}
-      </div>
+      {mapView ? (
+        <div className="px-4 pb-10">
+          <div className="rounded-2xl overflow-hidden border border-[#E5D9C2]">
+            <TshMap
+              pins={filtered.filter(p => p.lat && p.lng).map(p => ({
+                id: p.id,
+                nombre: p.nombre,
+                lat: p.lat!,
+                lng: p.lng!,
+                priceFrom: p.priceFrom,
+                categoriaColor: p.categoria.color,
+              }))}
+              height="65vh"
+              scrollWheel={false}
+            />
+          </div>
+          {filtered.filter(p => p.lat && p.lng).length === 0 && (
+            <p className="font-sans text-[13px] text-[#8B7D6B] text-center mt-4">Ningún negocio tiene dirección cargada todavía</p>
+          )}
+        </div>
+      ) : (
+        <div className="px-4 pb-10 flex flex-col gap-3">
+          {filtered.length === 0 && (
+            <div className="text-center py-14 text-[#8B7D6B] font-sans text-[14px]">Sin resultados para esta búsqueda</div>
+          )}
+          {filtered.map(p => (
+            <TshProviderCard key={p.id} provider={p} onClick={() => router.push(`/proveedor/${p.id}`)}/>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -343,54 +377,30 @@ export function SearchScreenDesktop({ query = '', categorias, proveedores, total
         </main>
 
         {/* Map sidebar */}
-        <aside className="w-[280px] shrink-0 ml-6 sticky top-6 h-[calc(100vh-120px)]">
+        <aside className="w-[320px] shrink-0 ml-6 sticky top-6 h-[calc(100vh-120px)]">
           <div className="relative h-full rounded-2xl overflow-hidden border border-[#EFE5D0]">
-            {/* Stylized map */}
-            <div className="absolute inset-0 bg-[#E8E0D0]"/>
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 280 600" preserveAspectRatio="none">
-              <rect x="15" y="30" width="90" height="75" rx="5" fill="#D4C4A8"/>
-              <rect x="120" y="15" width="110" height="90" rx="5" fill="#D4C4A8"/>
-              <rect x="15" y="125" width="130" height="110" rx="5" fill="#D4C4A8"/>
-              <rect x="165" y="125" width="90" height="55" rx="5" fill="#D4C4A8"/>
-              <rect x="165" y="195" width="90" height="75" rx="5" fill="#D4C4A8"/>
-              <rect x="15" y="255" width="75" height="95" rx="5" fill="#D4C4A8"/>
-              <rect x="110" y="255" width="145" height="95" rx="5" fill="#D4C4A8"/>
-              <rect x="15" y="370" width="130" height="95" rx="5" fill="#D4C4A8"/>
-              <rect x="160" y="370" width="90" height="115" rx="5" fill="#D4C4A8"/>
-              <rect x="15" y="485" width="95" height="95" rx="5" fill="#D4C4A8"/>
-              <rect x="130" y="505" width="130" height="75" rx="5" fill="#D4C4A8"/>
-              <path d="M 0 120 L 280 120" stroke="#E8E0D0" strokeWidth="9"/>
-              <path d="M 0 250 L 280 250" stroke="#E8E0D0" strokeWidth="9"/>
-              <path d="M 0 365 L 280 365" stroke="#E8E0D0" strokeWidth="9"/>
-              <path d="M 0 480 L 280 480" stroke="#E8E0D0" strokeWidth="9"/>
-              <path d="M 110 0 L 110 600" stroke="#E8E0D0" strokeWidth="9"/>
-              <path d="M 0 530 Q 70 510 140 540 T 280 550" stroke="#B8D4D0" strokeWidth="20" fill="none" opacity="0.5"/>
-            </svg>
-            {/* Pins */}
-            {filtered.slice(0, 6).map((p, i) => {
-              const pins = [{ x: 50, y: 165 }, { x: 185, y: 95 }, { x: 75, y: 310 }, { x: 210, y: 235 }, { x: 145, y: 415 }, { x: 55, y: 445 }];
-              const pin = pins[i] ?? { x: 100, y: 300 };
-              const isFirst = i === 0;
-              return (
-                <div key={p.id} className="absolute flex flex-col items-center" style={{ left: `${(pin.x / 280) * 100}%`, top: `${(pin.y / 600) * 100}%`, transform: 'translate(-50%, -100%)', zIndex: isFirst ? 10 : 1 }}>
-                  {isFirst && (
-                    <div className="bg-[#FFFBF3] rounded-lg px-2.5 py-1.5 shadow-[0_4px_16px_rgba(60,40,20,0.2)] font-sans text-[10px] font-bold text-[#1A1208] whitespace-nowrap mb-1 border border-[#EFE5D0]">
-                      {p.nombre.slice(0, 20)}
-                    </div>
-                  )}
-                  <div className="px-2 py-1 rounded-full font-sans text-[10px] font-bold text-white shadow-[0_3px_10px_rgba(0,0,0,0.2)]" style={{ background: isFirst ? '#E8673A' : p.categoria.color }}>
-                    ${Math.round(p.priceFrom / 1000)}k
-                  </div>
-                  <div className="w-px h-2" style={{ background: isFirst ? '#E8673A' : p.categoria.color }}/>
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: isFirst ? '#E8673A' : p.categoria.color }}/>
-                </div>
-              );
-            })}
-            {/* Map footer */}
-            <div className="absolute bottom-3 left-3 right-3 bg-[rgba(255,251,243,0.96)] backdrop-blur-sm rounded-xl px-3.5 py-2.5 flex items-center gap-2 border border-[#E5D9C2]">
+            <TshMap
+              pins={filtered.filter(p => p.lat && p.lng).map(p => ({
+                id: p.id,
+                nombre: p.nombre,
+                lat: p.lat!,
+                lng: p.lng!,
+                priceFrom: p.priceFrom,
+                categoriaColor: p.categoria.color,
+              }))}
+              height="100%"
+              scrollWheel={false}
+            />
+            {filtered.filter(p => p.lat && p.lng).length === 0 && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#F5EDDE] gap-2">
+                <TshIcon name="pin" size={28} color="#D4C4A8"/>
+                <span className="font-sans text-[12px] text-[#8B7D6B] text-center px-6">Los negocios aparecerán en el mapa cuando configuren su dirección</span>
+              </div>
+            )}
+            <div className="absolute bottom-3 left-3 right-3 bg-[rgba(255,251,243,0.96)] backdrop-blur-sm rounded-xl px-3.5 py-2.5 flex items-center gap-2 border border-[#E5D9C2] pointer-events-none" style={{ zIndex: 500 }}>
               <TshIcon name="pin" size={13} color="#E8673A"/>
               <span className="font-sans text-[11px] text-[#1A1208] font-semibold">{city}</span>
-              <span className="ml-auto font-sans text-[10px] text-[#8B7D6B]">{Math.min(6, filtered.length)} de {filtered.length}</span>
+              <span className="ml-auto font-sans text-[10px] text-[#8B7D6B]">{filtered.filter(p => p.lat && p.lng).length} en mapa · {filtered.length} total</span>
             </div>
           </div>
         </aside>

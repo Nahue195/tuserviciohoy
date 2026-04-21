@@ -72,6 +72,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       tags: p.tags,
       hours: p.hours,
       since: p.since,
+      lat: p.lat ?? undefined,
+      lng: p.lng ?? undefined,
       isPro: p.plan === 'PRO',
     };
   });

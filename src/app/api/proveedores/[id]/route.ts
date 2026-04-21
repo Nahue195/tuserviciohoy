@@ -22,6 +22,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({
       id: p.id,
       nombre: p.nombre,
+      lat: p.lat,
+      lng: p.lng,
       person: p.user.name ?? p.nombre,
       categoria: p.categoria,
       rating: Math.round(avgRating * 10) / 10,
@@ -63,20 +65,40 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (proveedor.user.email !== user.email) return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
     const body = await req.json() as Record<string, unknown>;
+
+    const data: Record<string, unknown> = {
+      ...(typeof body.nombre === 'string' ? { nombre: body.nombre } : {}),
+      ...(typeof body.descripcion === 'string' ? { descripcion: body.descripcion } : {}),
+      ...(typeof body.precioDesde === 'number' ? { precioDesde: body.precioDesde } : {}),
+      ...(typeof body.activo === 'boolean' ? { activo: body.activo } : {}),
+      ...(typeof body.direccion === 'string' ? { direccion: body.direccion } : {}),
+      ...(typeof body.neighborhood === 'string' ? { neighborhood: body.neighborhood } : {}),
+      ...(typeof body.hours === 'string' ? { hours: body.hours } : {}),
+      ...(typeof body.whatsapp === 'string' ? { whatsapp: body.whatsapp } : {}),
+      ...(typeof body.since === 'number' ? { since: body.since } : {}),
+      ...(Array.isArray(body.tags) ? { tags: body.tags as string[] } : {}),
+    };
+
+    // Geocode address when it changes
+    if (typeof body.direccion === 'string' && body.direccion.trim()) {
+      try {
+        const city = process.env.NEXT_PUBLIC_CITY_NAME ?? 'Trenque Lauquen';
+        const q = encodeURIComponent(`${body.direccion}, ${city}, Argentina`);
+        const geoRes = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`,
+          { headers: { 'User-Agent': 'TuServicioHoy/1.0' } }
+        );
+        const geoData = await geoRes.json() as { lat: string; lon: string }[];
+        if (geoData[0]) {
+          data.lat = parseFloat(geoData[0].lat);
+          data.lng = parseFloat(geoData[0].lon);
+        }
+      } catch { /* geocoding failure is non-critical */ }
+    }
+
     const updated = await prisma.proveedor.update({
       where: { id: params.id },
-      data: {
-        ...(typeof body.nombre === 'string' ? { nombre: body.nombre } : {}),
-        ...(typeof body.descripcion === 'string' ? { descripcion: body.descripcion } : {}),
-        ...(typeof body.precioDesde === 'number' ? { precioDesde: body.precioDesde } : {}),
-        ...(typeof body.activo === 'boolean' ? { activo: body.activo } : {}),
-        ...(typeof body.direccion === 'string' ? { direccion: body.direccion } : {}),
-        ...(typeof body.neighborhood === 'string' ? { neighborhood: body.neighborhood } : {}),
-        ...(typeof body.hours === 'string' ? { hours: body.hours } : {}),
-        ...(typeof body.whatsapp === 'string' ? { whatsapp: body.whatsapp } : {}),
-        ...(typeof body.since === 'number' ? { since: body.since } : {}),
-        ...(Array.isArray(body.tags) ? { tags: body.tags as string[] } : {}),
-      },
+      data: data as Parameters<typeof prisma.proveedor.update>[0]['data'],
     });
     return NextResponse.json(updated);
   } catch {

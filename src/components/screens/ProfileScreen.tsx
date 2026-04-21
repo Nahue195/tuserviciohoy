@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { TshIcon } from '@/components/ui/TshIcon';
 import { TshNavBar } from '@/components/ui/TshNavBar';
@@ -9,6 +10,8 @@ import { TshStars } from '@/components/ui/TshStars';
 import { TshPlaceholder } from '@/components/ui/TshPlaceholder';
 import { fmtPrice, getNextDays } from '@/lib/utils';
 import type { ProveedorCard, DayOption, SlotDisponible } from '@/types';
+
+const TshMap = dynamic(() => import('@/components/ui/TshMap').then(m => ({ default: m.TshMap })), { ssr: false });
 
 interface ReviewData {
   name: string;
@@ -271,6 +274,22 @@ export function ProfileScreenMobile({ proveedor: p, reviews, onBook }: ProfileSc
           </div>
         )}
       </div>
+
+      {/* Map */}
+      {p.lat && p.lng && (
+        <div className="px-4 pb-6">
+          <div className="font-sans text-[13px] font-bold mb-2" style={{ color: '#1A1208' }}>Ubicación</div>
+          <div className="rounded-2xl overflow-hidden border" style={{ borderColor: '#E5D9C2', height: 200 }}>
+            <TshMap
+              pins={[{ id: p.id, nombre: p.nombre, lat: p.lat, lng: p.lng }]}
+              height="100%"
+              singlePin
+              zoom={15}
+              scrollWheel={false}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Fixed bottom CTA */}
       <div className="fixed bottom-0 left-0 right-0 z-20 px-4 pb-8 pt-4" style={{ background: 'linear-gradient(to bottom, rgba(245,237,222,0) 0%, #F5EDDE 35%)' }}>
@@ -538,6 +557,28 @@ export function ProfileScreenDesktop({ proveedor: p, reviews, onBook }: ProfileS
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Map */}
+          {p.lat && p.lng && (
+            <div style={{ borderTop: '1px solid #EFE5D0', paddingTop: 32, paddingBottom: 32 }}>
+              <h2 className="font-sans font-bold text-[20px] m-0 mb-4 tracking-[-0.3px]" style={{ color: '#1A1208' }}>Ubicación</h2>
+              <div className="rounded-2xl overflow-hidden border" style={{ borderColor: '#EFE5D0', height: 280 }}>
+                <TshMap
+                  pins={[{ id: p.id, nombre: p.nombre, lat: p.lat, lng: p.lng }]}
+                  height="100%"
+                  singlePin
+                  zoom={15}
+                  scrollWheel={false}
+                />
+              </div>
+              {p.neighborhood && (
+                <p className="font-sans text-[13px] mt-2 m-0 flex items-center gap-1.5" style={{ color: '#8B7D6B' }}>
+                  <TshIcon name="pin" size={12} color="#8B7D6B"/>
+                  {p.neighborhood}
+                </p>
+              )}
             </div>
           )}
         </div>
