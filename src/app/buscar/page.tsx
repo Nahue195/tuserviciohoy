@@ -75,6 +75,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       lat: p.lat ?? undefined,
       lng: p.lng ?? undefined,
       isPro: p.plan === 'PRO',
+      fotoPerfil: p.fotoPerfil,
     };
   });
 
