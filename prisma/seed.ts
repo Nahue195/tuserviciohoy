@@ -7,14 +7,21 @@ async function main() {
 
   // ─── Categorías ──────────────────────────────────────────────────────────────
   const cats = await Promise.all([
-    prisma.categoria.upsert({ where: { slug: 'belleza' }, update: {}, create: { nombre: 'Belleza', slug: 'belleza', icono: 'scissors', color: '#D9634A', tint: '#FBE6DD' } }),
-    prisma.categoria.upsert({ where: { slug: 'salud' }, update: {}, create: { nombre: 'Salud', slug: 'salud', icono: 'heart', color: '#0F6E4E', tint: '#E3EFE8' } }),
-    prisma.categoria.upsert({ where: { slug: 'legal' }, update: {}, create: { nombre: 'Legal', slug: 'legal', icono: 'scale', color: '#3F4C7A', tint: '#E3E5EF' } }),
-    prisma.categoria.upsert({ where: { slug: 'hogar' }, update: {}, create: { nombre: 'Hogar', slug: 'hogar', icono: 'wrench', color: '#D69A2A', tint: '#F7ECD0' } }),
-    prisma.categoria.upsert({ where: { slug: 'mascotas' }, update: {}, create: { nombre: 'Mascotas', slug: 'mascotas', icono: 'paw', color: '#7A8968', tint: '#EAEEE2' } }),
-    prisma.categoria.upsert({ where: { slug: 'educacion' }, update: {}, create: { nombre: 'Educación', slug: 'educacion', icono: 'book', color: '#B85C3A', tint: '#F4DFD1' } }),
-    prisma.categoria.upsert({ where: { slug: 'bienestar' }, update: {}, create: { nombre: 'Bienestar', slug: 'bienestar', icono: 'lotus', color: '#A5436B', tint: '#F1DDE4' } }),
-    prisma.categoria.upsert({ where: { slug: 'autos' }, update: {}, create: { nombre: 'Autos', slug: 'autos', icono: 'car', color: '#4A5759', tint: '#E1E4E4' } }),
+    prisma.categoria.upsert({ where: { slug: 'belleza' },      update: {}, create: { nombre: 'Belleza',      slug: 'belleza',      icono: 'scissors', color: '#D9634A', tint: '#FBE6DD' } }),
+    prisma.categoria.upsert({ where: { slug: 'salud' },        update: {}, create: { nombre: 'Salud',        slug: 'salud',        icono: 'heart',    color: '#0F6E4E', tint: '#E3EFE8' } }),
+    prisma.categoria.upsert({ where: { slug: 'legal' },        update: {}, create: { nombre: 'Legal',        slug: 'legal',        icono: 'scale',    color: '#3F4C7A', tint: '#E3E5EF' } }),
+    prisma.categoria.upsert({ where: { slug: 'hogar' },        update: {}, create: { nombre: 'Hogar',        slug: 'hogar',        icono: 'wrench',   color: '#D69A2A', tint: '#F7ECD0' } }),
+    prisma.categoria.upsert({ where: { slug: 'mascotas' },     update: {}, create: { nombre: 'Mascotas',     slug: 'mascotas',     icono: 'paw',      color: '#7A8968', tint: '#EAEEE2' } }),
+    prisma.categoria.upsert({ where: { slug: 'educacion' },    update: {}, create: { nombre: 'Educación',    slug: 'educacion',    icono: 'book',     color: '#B85C3A', tint: '#F4DFD1' } }),
+    prisma.categoria.upsert({ where: { slug: 'bienestar' },    update: {}, create: { nombre: 'Bienestar',    slug: 'bienestar',    icono: 'lotus',    color: '#A5436B', tint: '#F1DDE4' } }),
+    prisma.categoria.upsert({ where: { slug: 'autos' },        update: {}, create: { nombre: 'Autos',        slug: 'autos',        icono: 'car',      color: '#4A5759', tint: '#E1E4E4' } }),
+    prisma.categoria.upsert({ where: { slug: 'electricidad' }, update: {}, create: { nombre: 'Electricidad', slug: 'electricidad', icono: 'bolt',     color: '#C17A1A', tint: '#F7ECD0' } }),
+    prisma.categoria.upsert({ where: { slug: 'plomeria' },     update: {}, create: { nombre: 'Plomería',     slug: 'plomeria',     icono: 'droplet',  color: '#2A6FB8', tint: '#DCE9F4' } }),
+    prisma.categoria.upsert({ where: { slug: 'limpieza' },     update: {}, create: { nombre: 'Limpieza',     slug: 'limpieza',     icono: 'sparkle',  color: '#3D8B6E', tint: '#E0EEE8' } }),
+    prisma.categoria.upsert({ where: { slug: 'fotografia' },   update: {}, create: { nombre: 'Fotografía',   slug: 'fotografia',   icono: 'camera',   color: '#7B5EA7', tint: '#EDE8F7' } }),
+    prisma.categoria.upsert({ where: { slug: 'contabilidad' }, update: {}, create: { nombre: 'Contabilidad', slug: 'contabilidad', icono: 'chart',    color: '#2A6B8B', tint: '#DCE9F0' } }),
+    prisma.categoria.upsert({ where: { slug: 'informatica' },  update: {}, create: { nombre: 'Informática',  slug: 'informatica',  icono: 'monitor',  color: '#4A5568', tint: '#E8EAED' } }),
+    prisma.categoria.upsert({ where: { slug: 'eventos' },      update: {}, create: { nombre: 'Eventos',      slug: 'eventos',      icono: 'music',    color: '#C4732A', tint: '#F5E6D8' } }),
   ]);
 
   const [belleza, salud, legal, hogar, mascotas, educacion, bienestar] = cats;

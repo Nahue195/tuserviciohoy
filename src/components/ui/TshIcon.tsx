@@ -49,6 +49,12 @@ export function TshIcon({ name, size = 20, color = 'currentColor', strokeWidth =
     arrowR: <path d="M5 12h14m-5-5 5 5-5 5" {...p}/>,
     arrowL: <path d="M19 12H5m5-5-5 5 5 5" {...p}/>,
     dot: <circle cx="12" cy="12" r="3" fill={color} stroke="none"/>,
+    bolt: <path d="M13 2L4 14h7v8l9-12h-7z" fill={color} stroke="none"/>,
+    droplet: <path d="M12 2.5C12 2.5 5 10 5 14.5a7 7 0 0 0 14 0C19 10 12 2.5 12 2.5z" {...p}/>,
+    camera: <g {...p}><rect x="2" y="7" width="20" height="14" rx="2"/><circle cx="12" cy="14" r="3.5"/><path d="M8 7V5.5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1V7"/></g>,
+    monitor: <g {...p}><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></g>,
+    broom: <g {...p}><path d="M18 3 7 14M7 14l-2 5 5-2M7 14l-3 3"/><path d="M15 6l3 3"/></g>,
+    music: <g {...p}><path d="M9 18V6l12-3v12"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="15" r="3"/></g>,
   };
 
   return (
