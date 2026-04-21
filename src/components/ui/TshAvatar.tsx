@@ -2,6 +2,7 @@ interface TshAvatarProps {
   name?: string;
   seed?: number;
   size?: number;
+  src?: string;
 }
 
 const palettes: [string, string][] = [
@@ -13,9 +14,19 @@ const palettes: [string, string][] = [
   ['#F2C6B0', '#A03E1B'],
 ];
 
-export function TshAvatar({ name = 'A', seed = 0, size = 40 }: TshAvatarProps) {
+export function TshAvatar({ name = 'A', seed = 0, size = 40, src }: TshAvatarProps) {
   const [bg, fg] = palettes[seed % palettes.length] ?? palettes[0]!;
   const initial = name.trim().charAt(0).toUpperCase();
+
+  if (src) {
+    return (
+      <div style={{
+        width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+      }}>
+        <img src={src} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+      </div>
+    );
+  }
 
   return (
     <div style={{

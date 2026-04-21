@@ -24,6 +24,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       nombre: p.nombre,
       lat: p.lat,
       lng: p.lng,
+      fotoPerfil: p.fotoPerfil,
       person: p.user.name ?? p.nombre,
       categoria: p.categoria,
       rating: Math.round(avgRating * 10) / 10,

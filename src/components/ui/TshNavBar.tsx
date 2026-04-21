@@ -81,7 +81,7 @@ export function TshNavBar({ city, variant = 'desktop', darkBg = false }: TshNavB
           <span onClick={() => router.push('/buscar')} className={`cursor-pointer ${t.navHover} transition-colors`}>Explorar</span>
           <span onClick={() => router.push('/buscar')} className={`cursor-pointer ${t.navHover} transition-colors`}>Categorías</span>
           <span className={`cursor-pointer ${t.navHover} transition-colors`}>Cómo funciona</span>
-          <span onClick={() => router.push('/precios')} className={`cursor-pointer ${t.navHover} transition-colors`}>Para comercios</span>
+          <span onClick={() => router.push('/para-negocios')} className={`cursor-pointer ${t.navHover} transition-colors`}>Para comercios</span>
         </nav>
       </div>
       <div className="flex gap-3 items-center">

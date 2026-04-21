@@ -33,6 +33,7 @@ export interface ProveedorCard {
   lat?: number;
   lng?: number;
   isPro?: boolean;
+  fotoPerfil?: string | null;
   resenas?: { name: string; rating: number; text: string; date: string }[];
 }
 

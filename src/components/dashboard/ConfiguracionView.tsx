@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -15,6 +15,7 @@ interface Perfil {
   hours: string;
   precioDesde: number;
   tags: string[];
+  fotoPerfil?: string;
 }
 interface Props {
   proveedorId: string;
@@ -35,6 +36,12 @@ export function ConfiguracionView({ proveedorId, perfil: initialPerfil, disponib
   const [savedPerfil, setSavedPerfil] = useState(false);
   const [errorPerfil, setErrorPerfil] = useState('');
 
+  // Photo upload state
+  const [photoUrl, setPhotoUrl] = useState(initialPerfil.fotoPerfil ?? '');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Disponibilidad state
   const [disps, setDisps] = useState<DiasDisp[]>(initialDisp);
   const [savingDisp, setSavingDisp] = useState(false);
@@ -52,6 +59,25 @@ export function ConfiguracionView({ proveedorId, perfil: initialPerfil, disponib
 
   const updateDisp = (dia: number, field: keyof DiasDisp, value: string | number) => {
     setDisps(disps.map(d => d.diaSemana === dia ? { ...d, [field]: value } : d));
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError('');
+    setUploadingPhoto(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/upload/avatar', { method: 'POST', body: formData });
+    setUploadingPhoto(false);
+    if (res.ok) {
+      const data = await res.json() as { url: string };
+      setPhotoUrl(data.url);
+    } else {
+      const data = await res.json() as { error?: string };
+      setPhotoError(data.error ?? 'Error al subir la foto');
+    }
+    e.target.value = '';
   };
 
   const savePerfil = async () => {
@@ -95,6 +121,44 @@ export function ConfiguracionView({ proveedorId, perfil: initialPerfil, disponib
       {/* Perfil */}
       <div className="bg-[#161616] border border-white/[0.06] rounded-2xl p-6 max-w-[680px] mb-5">
         <div className="font-sans text-sm font-semibold text-white mb-5">Información del negocio</div>
+
+        {/* Photo upload */}
+        <div className="flex items-center gap-4 mb-5 pb-5 border-b border-white/[0.06]">
+          <div className="relative shrink-0">
+            <div
+              className="w-16 h-16 rounded-full overflow-hidden bg-[#1C1C1C] border-2 border-white/10 flex items-center justify-center cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploadingPhoto ? (
+                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"/>
+              ) : photoUrl ? (
+                <img src={photoUrl} alt="" className="w-full h-full object-cover"/>
+              ) : (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-8 8-8s8 3.5 8 8"/>
+                </svg>
+              )}
+            </div>
+          </div>
+          <div>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingPhoto}
+              className="px-4 h-9 rounded-lg border border-white/[0.12] bg-transparent text-white/60 font-sans text-[13px] font-semibold cursor-pointer hover:border-white/25 hover:text-white/90 transition-colors disabled:opacity-40"
+            >
+              {uploadingPhoto ? 'Subiendo…' : photoUrl ? 'Cambiar foto' : 'Subir foto'}
+            </button>
+            <p className="font-sans text-[11px] text-white/25 mt-1.5 m-0">JPG, PNG o WEBP · máx. 5 MB</p>
+            {photoError && <p className="font-sans text-[12px] text-red-400 mt-1 m-0">{photoError}</p>}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoChange}
+          />
+        </div>
 
         <div className="grid grid-cols-1 gap-4">
           <div>
