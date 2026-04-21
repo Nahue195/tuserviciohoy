@@ -117,25 +117,15 @@ export function ConfiguracionView({ proveedorId, perfil: initialPerfil, disponib
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Dirección</label>
-              <input
-                className={fieldCls}
-                value={perfil.direccion}
-                onChange={e => setPerfil(p => ({ ...p, direccion: e.target.value }))}
-                placeholder="Ej: Av. Siempreviva 742"
-              />
-            </div>
-            <div>
-              <label className={labelCls}>Barrio / Zona</label>
-              <input
-                className={fieldCls}
-                value={perfil.neighborhood}
-                onChange={e => setPerfil(p => ({ ...p, neighborhood: e.target.value }))}
-                placeholder="Ej: Palermo"
-              />
-            </div>
+          <div>
+            <label className={labelCls}>Dirección</label>
+            <input
+              className={fieldCls}
+              value={perfil.direccion}
+              onChange={e => setPerfil(p => ({ ...p, direccion: e.target.value }))}
+              placeholder="Ej: Av. Siempreviva 742"
+            />
+            <p className="font-sans text-[11px] text-white/25 mt-1.5 m-0">Se usa para ubicarte en el mapa</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

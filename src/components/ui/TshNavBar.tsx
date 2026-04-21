@@ -27,7 +27,6 @@ export function TshNavBar({ city, variant = 'desktop', darkBg = false }: TshNavB
             <div className="inline-flex items-center gap-1 mt-0.5">
               <TshIcon name="pin" size={14} color="#C4532A"/>
               <span className="font-serif text-base font-medium text-ink">{city}</span>
-              <TshIcon name="chevronD" size={14} color="#8B7D6B"/>
             </div>
           </div>
           {status === 'loading' ? (
@@ -92,10 +91,20 @@ export function TshNavBar({ city, variant = 'desktop', darkBg = false }: TshNavB
         </nav>
       </div>
       <div className="flex gap-3 items-center">
-        <div className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border ${t.cityBorder} font-sans text-[13px] ${t.cityText} cursor-pointer ${t.cityHover} transition-colors`}>
-          <TshIcon name="pin" size={14} color="#E8673A"/>
-          {city}
-          <TshIcon name="chevronD" size={12} color={darkBg ? 'rgba(255,255,255,0.3)' : '#8B7D6B'}/>
+        <div className="relative group">
+          <div className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border ${t.cityBorder} font-sans text-[13px] ${t.cityText} cursor-pointer ${t.cityHover} transition-colors`}>
+            <TshIcon name="pin" size={14} color="#E8673A"/>
+            {city}
+            <TshIcon name="chevronD" size={12} color={darkBg ? 'rgba(255,255,255,0.3)' : '#8B7D6B'}/>
+          </div>
+          <div className="absolute right-0 top-11 hidden group-hover:block z-50">
+            <div className="bg-paper border border-[#EFE5D0] rounded-xl shadow-[0_8px_24px_rgba(60,40,20,0.12)] px-4 py-3 min-w-[180px]">
+              <div className="font-sans text-[11px] font-bold uppercase tracking-wider text-[#8B7D6B] mb-1">Cambiar ciudad</div>
+              <div className="font-sans text-[13px] text-[#5C5048] flex items-center gap-1.5">
+                <span className="text-[#E8673A]">⏳</span> Próximamente
+              </div>
+            </div>
+          </div>
         </div>
         {status === 'loading' ? (
           <div className={`w-[90px] h-9 rounded-full ${darkBg ? 'bg-white/10' : 'bg-[#EFE5D0]'}`}/>

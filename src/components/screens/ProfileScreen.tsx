@@ -176,7 +176,7 @@ export function ProfileScreenMobile({ proveedor: p, reviews, onBook }: ProfileSc
         {/* Identity */}
         <div className="px-4 pb-6">
           <div className="flex gap-3 items-start mb-3">
-            <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0" style={{ border: `2px solid ${p.categoria.color}` }}>
+            <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0">
               <TshAvatar name={p.person} seed={p.avatarSeed} size={56}/>
             </div>
             <div className="flex-1 min-w-0 pt-0.5">
@@ -339,7 +339,7 @@ export function ProfileScreenDesktop({ proveedor: p, reviews, onBook }: ProfileS
           <div className="flex gap-6 items-start">
             {/* Cover thumbnail + avatar stacked */}
             <div className="shrink-0 relative">
-              <div className="w-[100px] h-[100px] rounded-2xl overflow-hidden" style={{ border: `2px solid ${p.categoria.color}` }}>
+              <div className="w-[100px] h-[100px] rounded-2xl overflow-hidden">
                 <TshAvatar name={p.person} seed={p.avatarSeed} size={100}/>
               </div>
             </div>
