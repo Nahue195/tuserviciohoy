@@ -321,7 +321,7 @@ export function ProfileScreenDesktop({ proveedor: p, reviews, onBook }: ProfileS
 
       {/* Dark identity header */}
       <div style={{ background: '#140E08' }}>
-        <TshNavBar city={p.neighborhood} variant="desktop" darkBg/>
+        <TshNavBar city={process.env.NEXT_PUBLIC_CITY_NAME ?? 'Trenque Lauquen'} variant="desktop" darkBg/>
 
         {/* Breadcrumb */}
         <div className="px-14 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
