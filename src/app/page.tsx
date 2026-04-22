@@ -54,6 +54,9 @@ export default async function HomePage() {
       hours: p.hours,
       since: p.since,
       isPro: p.plan === 'PRO',
+      fotoPerfil: p.fotoPerfil,
+      modoContacto: p.modoContacto,
+      whatsapp: p.whatsapp ?? undefined,
     };
   });
 
