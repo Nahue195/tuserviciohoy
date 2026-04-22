@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
       clienteEmail = dbUser?.email ?? null;
       clienteNombre = dbUser?.name ?? clienteNombre;
     } else {
-      const guestEmail = data.clienteEmail ?? `anonimo-${Date.now()}@tuserviciohoy.com`;
+      const guestEmail = data.clienteEmail ?? `guest-${crypto.randomUUID()}@tuserviciohoy.internal`;
       // Reuse existing user if email already exists, otherwise create guest
       const existing = data.clienteEmail
         ? await prisma.user.findUnique({ where: { email: guestEmail } })

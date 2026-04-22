@@ -26,11 +26,19 @@ export async function POST(req: NextRequest) {
   const file = formData.get('file') as File | null;
   if (!file) return NextResponse.json({ error: 'No se recibió archivo' }, { status: 400 });
 
-  if (!file.type.startsWith('image/')) {
-    return NextResponse.json({ error: 'Solo se permiten imágenes' }, { status: 400 });
-  }
   if (file.size > 5 * 1024 * 1024) {
     return NextResponse.json({ error: 'La imagen no puede superar 5 MB' }, { status: 400 });
+  }
+
+  // Validate by magic bytes — client-provided Content-Type is not trustworthy
+  const headerBytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  const isJpeg = headerBytes[0] === 0xFF && headerBytes[1] === 0xD8 && headerBytes[2] === 0xFF;
+  const isPng  = headerBytes[0] === 0x89 && headerBytes[1] === 0x50 && headerBytes[2] === 0x4E && headerBytes[3] === 0x47;
+  const isGif  = headerBytes[0] === 0x47 && headerBytes[1] === 0x49 && headerBytes[2] === 0x46;
+  const isWebp = headerBytes[0] === 0x52 && headerBytes[1] === 0x49 && headerBytes[2] === 0x46 && headerBytes[3] === 0x46
+              && headerBytes[8] === 0x57 && headerBytes[9] === 0x45 && headerBytes[10] === 0x42 && headerBytes[11] === 0x50;
+  if (!isJpeg && !isPng && !isGif && !isWebp) {
+    return NextResponse.json({ error: 'Formato no válido. Usá JPG, PNG, GIF o WEBP.' }, { status: 400 });
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
