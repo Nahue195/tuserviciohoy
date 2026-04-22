@@ -26,6 +26,7 @@ export default async function ConfiguracionPage() {
         precioDesde: proveedor.precioDesde,
         tags: proveedor.tags,
         fotoPerfil: proveedor.fotoPerfil ?? undefined,
+        modoContacto: proveedor.modoContacto,
       }}
       disponibilidad={proveedor.disponibilidad.map(d => ({
         id: d.id, diaSemana: d.diaSemana,

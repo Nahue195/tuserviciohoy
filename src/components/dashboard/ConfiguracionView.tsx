@@ -16,6 +16,7 @@ interface Perfil {
   precioDesde: number;
   tags: string[];
   fotoPerfil?: string;
+  modoContacto: 'TURNO' | 'WHATSAPP' | 'COTIZACION';
 }
 interface Props {
   proveedorId: string;
@@ -190,6 +191,31 @@ export function ConfiguracionView({ proveedorId, perfil: initialPerfil, disponib
               placeholder="Ej: Av. Siempreviva 742"
             />
             <p className="font-sans text-[11px] text-white/25 mt-1.5 m-0">Se usa para ubicarte en el mapa</p>
+          </div>
+
+          <div>
+            <label className={labelCls}>Modo de contacto</label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { value: 'TURNO', label: 'Agenda turnos', desc: 'Los clientes eligen horario' },
+                { value: 'WHATSAPP', label: 'WhatsApp directo', desc: 'Coordinan por chat' },
+                { value: 'COTIZACION', label: 'Presupuesto', desc: 'Pedido de cotización' },
+              ] as const).map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setPerfil(p => ({ ...p, modoContacto: opt.value }))}
+                  className="p-3 rounded-xl border text-left transition-all"
+                  style={{
+                    border: `1.5px solid ${perfil.modoContacto === opt.value ? '#E8673A' : 'rgba(255,255,255,0.08)'}`,
+                    background: perfil.modoContacto === opt.value ? 'rgba(232,103,58,0.08)' : 'rgba(255,255,255,0.02)',
+                  }}
+                >
+                  <div className="font-sans text-[12px] font-semibold text-white leading-tight">{opt.label}</div>
+                  <div className="font-sans text-[10px] text-white/35 mt-0.5">{opt.desc}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

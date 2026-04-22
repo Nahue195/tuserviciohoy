@@ -140,9 +140,22 @@ export function TshProviderCard({ provider: p, onClick, variant = 'list' }: TshP
 
         {/* Bottom row */}
         <div className="flex justify-between items-center mt-1.5">
-          <div className="font-sans text-[10px] text-[#8B7D6B]">
-            {p.hours?.split('·')[0]?.trim() ?? p.nextSlot}
-          </div>
+          {p.modoContacto === 'WHATSAPP' ? (
+            <span className="inline-flex items-center gap-1 font-sans text-[10px] font-semibold" style={{ color: '#25D366' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#25D366]"/>
+              WhatsApp
+            </span>
+          ) : p.modoContacto === 'COTIZACION' ? (
+            <span className="inline-flex items-center gap-1 font-sans text-[10px] font-semibold" style={{ color: '#E8673A' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E8673A]"/>
+              Presupuesto
+            </span>
+          ) : (
+            <div className={`font-sans text-[10px] font-semibold inline-flex items-center gap-1 ${p.availableToday ? 'text-[#0F6E4E]' : 'text-[#8B7D6B]'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${p.availableToday ? 'bg-[#34D399]' : 'bg-[#C9BDA5]'}`}/>
+              {p.availableToday ? 'Disponible hoy' : p.hours?.split('·')[0]?.trim() ?? p.nextSlot}
+            </div>
+          )}
           <div className="font-sans text-[13px] font-bold text-[#1A1208] tracking-[-0.3px]">
             desde {fmtPrice(p.priceFrom)}
           </div>

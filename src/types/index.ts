@@ -34,6 +34,7 @@ export interface ProveedorCard {
   lng?: number;
   isPro?: boolean;
   fotoPerfil?: string | null;
+  modoContacto?: 'TURNO' | 'WHATSAPP' | 'COTIZACION';
   resenas?: { name: string; rating: number; text: string; date: string }[];
 }
 

@@ -69,6 +69,12 @@ enum PlanTipo {
   PRO
 }
 
+enum ModoContacto {
+  TURNO      // agenda con slots horarios
+  WHATSAPP   // contacto directo por WhatsApp
+  COTIZACION // pedido de presupuesto por WhatsApp
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String?
@@ -112,7 +118,8 @@ model Proveedor {
   whatsapp     String?
   neighborhood String  @default("Centro")
   distanceKm   Float   @default(1.0)
-  activo       Boolean  @default(true)
+  activo       Boolean      @default(true)
+  modoContacto ModoContacto @default(TURNO)
   plan         PlanTipo @default(FREE)
   planVence    DateTime?
   since        Int      @default(2020)

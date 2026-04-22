@@ -25,6 +25,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       lat: p.lat,
       lng: p.lng,
       fotoPerfil: p.fotoPerfil,
+      modoContacto: p.modoContacto,
+      whatsapp: p.whatsapp,
       person: p.user.name ?? p.nombre,
       categoria: p.categoria,
       rating: Math.round(avgRating * 10) / 10,
@@ -76,6 +78,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       ...(typeof body.neighborhood === 'string' ? { neighborhood: body.neighborhood } : {}),
       ...(typeof body.hours === 'string' ? { hours: body.hours } : {}),
       ...(typeof body.whatsapp === 'string' ? { whatsapp: body.whatsapp } : {}),
+      ...(typeof body.modoContacto === 'string' && ['TURNO', 'WHATSAPP', 'COTIZACION'].includes(body.modoContacto as string) ? { modoContacto: body.modoContacto as 'TURNO' | 'WHATSAPP' | 'COTIZACION' } : {}),
       ...(typeof body.since === 'number' ? { since: body.since } : {}),
       ...(Array.isArray(body.tags) ? { tags: body.tags as string[] } : {}),
     };

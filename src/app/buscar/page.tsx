@@ -76,6 +76,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       lng: p.lng ?? undefined,
       isPro: p.plan === 'PRO',
       fotoPerfil: p.fotoPerfil,
+      modoContacto: p.modoContacto,
+      whatsapp: p.whatsapp ?? undefined,
     };
   });
 
